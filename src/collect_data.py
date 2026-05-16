@@ -27,6 +27,9 @@ import os
 import sys
 import time
 
+if sys.stdout.encoding.lower() != 'utf-8':
+    sys.stdout.reconfigure(encoding='utf-8')
+
 # ---------------------------------------------------------------------------
 # Path setup — allow running from project root or from src/
 # ---------------------------------------------------------------------------
@@ -87,7 +90,7 @@ def collect_phase(
     """
     rows: list[dict] = []
 
-    bar = "─" * 50
+    bar = "-" * 50
     print(f"\n{bar}")
     print(f"  Phase {label} | {label_name}")
     print(f"  Duration : {duration_sec}s")
@@ -127,7 +130,7 @@ def collect_phase(
         if injector:
             injector.stop()
 
-    print(f"  ✅ Phase {label} complete — {len(rows)} rows collected.")
+    print(f"  [OK] Phase {label} complete — {len(rows)} rows collected.")
     return rows
 
 
@@ -148,7 +151,7 @@ def main():
     os.makedirs(DATA_DIR, exist_ok=True)
     output_path = os.path.join(DATA_DIR, c_cfg["training_file"])
 
-    # ── Banner ───────────────────────────────────────────────────────────────
+    # --- Banner --------------------------------------------------------------
     print("=" * 60)
     print("  DCML Anomaly Detector — Data Collection")
     print("=" * 60)
@@ -158,7 +161,7 @@ def main():
     print(f"  Total runtime : ~{total}s ({total // 60}m {total % 60}s)")
     print(f"  Output        : {output_path}")
 
-    # ── Initialise monitor & warm up rolling window ──────────────────────────
+    # --- Initialise monitor & warm up rolling window -------------------------
     monitor = SystemMonitor(
         window_size=window,
         interval=m_cfg["sample_interval_sec"],
@@ -171,38 +174,38 @@ def main():
         time.sleep(1)
     print(f"  Warm-up complete.{' ' * 20}")
 
-    # ── Phase 0: Normal ───────────────────────────────────────────────────────
-    print("\n  ⚡ Phase 0: Use your laptop normally (browse, type, idle).")
+    # --- Phase 0: Normal ------------------------------------------------------
+    print("\n  [!] Phase 0: Use your laptop normally (browse, type, idle).")
     all_rows = collect_phase(
         monitor, normal_dur, label=0,
         label_name=label_names["0"],
         injector=None,
     )
 
-    # ── Phase 1: CPU Anomaly ─────────────────────────────────────────────────
+    # --- Phase 1: CPU Anomaly -------------------------------------------------
     all_rows += collect_phase(
         monitor, anomaly_dur, label=1,
         label_name=label_names["1"],
         injector=CPUAnomalyInjector(intensity=1.0),
     )
 
-    # ── Phase 2: Memory Anomaly ───────────────────────────────────────────────
+    # --- Phase 2: Memory Anomaly ----------------------------------------------
     all_rows += collect_phase(
         monitor, anomaly_dur, label=2,
         label_name=label_names["2"],
         injector=MemoryAnomalyInjector(target_mb=512, chunk_mb=50),
     )
 
-    # ── Phase 3: Disk Anomaly ─────────────────────────────────────────────────
+    # --- Phase 3: Disk Anomaly ------------------------------------------------
     all_rows += collect_phase(
         monitor, anomaly_dur, label=3,
         label_name=label_names["3"],
         injector=DiskAnomalyInjector(file_size_mb=100),
     )
 
-    # ── Write CSV ─────────────────────────────────────────────────────────────
+    # --- Write CSV ------------------------------------------------------------
     if not all_rows:
-        print("\n❌ No data collected — exiting.")
+        print("\n[ERROR] No data collected — exiting.")
         return
 
     feature_cols = get_feature_names()
@@ -213,9 +216,9 @@ def main():
         writer.writeheader()
         writer.writerows(all_rows)
 
-    # ── Summary ───────────────────────────────────────────────────────────────
+    # --- Summary --------------------------------------------------------------
     print("\n" + "=" * 60)
-    print(f"  ✅ Saved {len(all_rows)} rows → {output_path}")
+    print(f"  [OK] Saved {len(all_rows)} rows → {output_path}")
     print("\n  Label distribution:")
 
     from collections import Counter
@@ -223,7 +226,7 @@ def main():
     for lbl in sorted(counts):
         name  = label_names[str(lbl)]
         count = counts[lbl]
-        bar   = "█" * (count // 2)
+        bar   = "#" * (count // 2)
         print(f"    Label {lbl} ({name:<15}) : {count:>4} rows  {bar}")
 
     print("=" * 60)

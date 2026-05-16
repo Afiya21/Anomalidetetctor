@@ -21,6 +21,10 @@ import time
 import collections
 import psutil
 import numpy as np
+import sys
+
+if sys.stdout.encoding.lower() != 'utf-8':
+    sys.stdout.reconfigure(encoding='utf-8')
 
 
 # ---------------------------------------------------------------------------
@@ -218,7 +222,7 @@ if __name__ == "__main__":
 
     def _shutdown(sig, frame):
         csv_file.close()
-        print(f"\n✅ Stopped. {row_count} rows saved to {os.path.abspath(OUT_PATH)}")
+        print(f"\n[OK] Stopped. {row_count} rows saved to {os.path.abspath(OUT_PATH)}")
         sys.exit(0)
 
     signal.signal(signal.SIGINT, _shutdown)
