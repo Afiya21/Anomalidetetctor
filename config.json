@@ -1,0 +1,36 @@
+{
+    "monitor": {
+        "sample_interval_sec": 1.0,
+        "rolling_window": 5
+    },
+
+    "collection": {
+        "normal_duration_sec": 120,
+        "anomaly_duration_sec": 60,
+        "training_file": "training_data.csv"
+    },
+
+    "training": {
+        "n_splits": 3,
+        "random_state": 42,
+        "iso_forest_contamination": "auto",
+        "iso_forest_n_estimators": 200
+    },
+
+    "detector": {
+        "model_path":        "models/best_model.pkl",
+        "scaler_path":       "models/scaler.pkl",
+        "log_path":          "logs/runtime_log.csv",
+        "warning_threshold": 0.40,
+        "critical_threshold": 0.70,
+        "sample_interval_sec": 1.0,
+        "rolling_window": 5
+    },
+
+    "labels": {
+        "0": "Normal",
+        "1": "CPU Anomaly",
+        "2": "Memory Anomaly",
+        "3": "Disk Anomaly"
+    }
+}
